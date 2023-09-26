@@ -37,6 +37,13 @@ func Create(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+	// Check if the data already exists in the database
+	var existingProduct models.Product
+	if err := models.DB.Where("nama_product = ?", product.NamaProduct).First(&existingProduct).Error; err == nil {
+		c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "Data already exists"})
+		return
+	}
+	// Data does not exist, so create it
 	models.DB.Create(&product)
 	c.JSON(http.StatusOK, gin.H{"product": product})
 }
@@ -69,5 +76,5 @@ func Delete(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Delete data failed"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Updated successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
 }
